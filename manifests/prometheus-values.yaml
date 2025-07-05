@@ -1,0 +1,113 @@
+prometheus:
+  prometheusSpec:
+    maximumStartupDurationSeconds: 300
+    alerting:
+      alertmanagers:
+        - namespace: monitoring
+          name: monitoring-kube-prometheus-alertmanager
+          port: web
+    ruleSelector:
+      matchLabels:
+        role: alert-rules
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "1000m"
+
+alertmanager:
+  enabled: true
+  fullnameOverride: monitoring-kube-prometheus-alertmanager
+  image:
+    repository: quay.io/prometheus/alertmanager
+  tag: v0.28.1
+  alertmanagerSpec:
+    image:
+      repository: quay.io/prometheus/alertmanager
+      tag: v0.28.1
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    resources:  # 👈 AJOUTER ICI
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+
+    
+  config:
+    global:
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'wissamamekrane20@gmail.com'
+      smtp_auth_username: 'wissamamekrane20@gmail.com'
+      smtp_auth_password: 'jcduwubjjymfjpdn'
+      smtp_require_tls: true
+    route:
+      group_by: [alertname]
+      receiver: 'email-default'
+      routes:
+      - matchers:
+        - 'role="alert-rules"'
+        - 'severity="critical"'
+        receiver: 'email-critical'
+
+      - matchers:
+        - 'role="alert-rules"'
+        - 'severity="warning"'
+        receiver: 'email-warning'
+
+    receivers:
+    - name: 'email-critical'
+      email_configs:
+        - to: 'wissamamekrane20@gmail.com'
+          send_resolved: true
+          headers:
+            subject: '[Alerte CRITIQUE] {{ .CommonLabels.alertname }}'
+
+    - name: 'email-warning'
+      email_configs:
+        - to: 'wissamamekrane20@gmail.com'
+          send_resolved: true
+          headers:
+            subject: '[Alerte WARNING] {{ .CommonLabels.alertname }}'
+
+    - name: 'email-default'
+      email_configs:
+        - to: 'wissamamekrane20@gmail.com'
+          send_resolved: true
+          headers:
+            subject: '[Alerte Autre] {{ .CommonLabels.alertname }}'
+
+grafana:
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    existingClaim: "grafana-storage"
+    storageClassName: local-path 
+  podSecurityContext:
+    fsGroup: 472   
+    runAsUser: 472
+    runAsGroup: 472
+  initChownData: 
+      enabled: false

@@ -1,0 +1,55 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: app-alerts
+  namespace: monitoring
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: general-rules
+    rules:
+    - alert: HighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{image!=""}[1m]) > 0.01
+      for: 10s
+      labels:
+        severity: warning
+      annotations:
+        summary: "Utilisation CPU élevée"
+        description: "Le container {{ $labels.container }} utilise > 80% du CPU depuis 2 min."
+
+    - alert: NodeMemoryUsageHigh
+      expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Utilisation mémoire du nœud > 90%"
+        description: "Le nœud {{ $labels.instance }} utilise plus de 90% de sa mémoire."
+
+    - alert: PodDown
+      expr:  kube_pod_status_ready{condition="true", phase="Running"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod indisponible"
+        description: "Le pod {{ $labels.pod }} dans {{ $labels.namespace }} est indisponible."
+
+    - alert: ServiceAvailabilityLow
+      expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Erreurs HTTP 5xx"
+        description: "Plus de 10% des requêtes HTTP échouent avec une erreur 5xx."
+
+    - alert: ApplicationCriticalMetric
+      expr: my_app_critical_metric > 100
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Métrique applicative critique"
+        description: "La métrique my_app_critical_metric dépasse 100."
