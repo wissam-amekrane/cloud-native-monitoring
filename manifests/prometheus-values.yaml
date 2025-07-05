@@ -44,7 +44,7 @@ alertmanager:
           resources:
             requests:
               storage: 5Gi
-    resources:  # 👈 AJOUTER ICI
+    resources: 
       requests:
         cpu: "250m"
         memory: "512Mi"
@@ -56,9 +56,9 @@ alertmanager:
   config:
     global:
       smtp_smarthost: 'smtp.gmail.com:587'
-      smtp_from: 'wissamamekrane20@gmail.com'
-      smtp_auth_username: 'wissamamekrane20@gmail.com'
-      smtp_auth_password: 'jcduwubjjymfjpdn'
+      smtp_from: 'yourmail@gmail.com'
+      smtp_auth_username: 'yourmail@gmail.com'
+      smtp_auth_password: 'yourmailpassword'
       smtp_require_tls: true
     route:
       group_by: [alertname]
@@ -77,21 +77,21 @@ alertmanager:
     receivers:
     - name: 'email-critical'
       email_configs:
-        - to: 'wissamamekrane20@gmail.com'
+        - to: 'yourmail@gmail.com'
           send_resolved: true
           headers:
             subject: '[Alerte CRITIQUE] {{ .CommonLabels.alertname }}'
 
     - name: 'email-warning'
       email_configs:
-        - to: 'wissamamekrane20@gmail.com'
+        - to: 'yourmail@gmail.com'
           send_resolved: true
           headers:
             subject: '[Alerte WARNING] {{ .CommonLabels.alertname }}'
 
     - name: 'email-default'
       email_configs:
-        - to: 'wissamamekrane20@gmail.com'
+        - to: 'yourmail@gmail.com'
           send_resolved: true
           headers:
             subject: '[Alerte Autre] {{ .CommonLabels.alertname }}'
@@ -99,8 +99,8 @@ alertmanager:
 grafana:
   admin:
     existingSecret: grafana-admin-secret
-    userKey: admin-user
-    passwordKey: admin-password
+    userKey: user
+    passwordKey: password
   persistence:
     enabled: true
     existingClaim: "grafana-storage"
