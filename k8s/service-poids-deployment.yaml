@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-poids
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-poids
+  template:
+    metadata:
+      labels:
+        app: service-poids
+    spec:
+      containers:
+      - name: service-poids
+        image: service-poids:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5002
+       

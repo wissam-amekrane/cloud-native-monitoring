@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-age
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-age
+  template:
+    metadata:
+      labels:
+        app: service-age
+    spec:
+      containers:
+      - name: service-age
+        image: service-age:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5001
+        
